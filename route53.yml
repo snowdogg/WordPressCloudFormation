@@ -1,0 +1,21 @@
+
+Parameters:
+  Ec2Ip:
+    Description: IP Address of EC2 Instance
+    Type: String
+  HostedZone:
+    Type: AWS::Route53::HostedZone::Id
+  RecordName:
+    Type: String
+    Description: Complete name to of record to add. Example - "mail.google.com"
+​
+Resources:
+  myDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: !Ref RecordName
+      ResourceRecords:
+        - !Ref Ec2Ip
+      TTL: "900"
+      Type: A

@@ -1,0 +1,59 @@
+Parameters:
+  PrivateSubnetID:
+    Description: SubnetIDs to populate DB Subnet Group
+    Type: String
+  Engineer: 
+    Description: Name Of Engineer Who Launched Configuration
+    Type: String
+    Default: "Unknown"
+  Username:
+    Description: Master Username for Database
+    Type: String
+    Default: admin
+  Password:
+    Description: Master Password for Database
+    Type: String
+
+Resources: 
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties: 
+      DBSubnetGroupDescription: group of subnets to place database in
+      DBSubnetGroupName: String
+      SubnetIds: !Ref PrivateSubnetID
+      Tags: 
+        - Key: Engineer
+          Value: !Ref Engineer
+  RDS: 
+    Type: AWS::RDS::DBInstance
+    Properties: 
+      AllocatedStorage: 2
+      #AvailabilityZone: #??
+      DBInstanceClass: db.t2.micro
+      #DBSecurityGroups: #####
+      DBSubnetGroupName: # change to parameter later
+      DBName: WordpressDataBase # Change to paramter later
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      Engine: mysql
+      MasterUsername: !Ref Username
+      MasterUserPassword: !Ref Password
+      Port: 3306
+      Tags: 
+        - Key: Engineer
+          Value: !Ref Engineer           
+
+Outputs:
+  RDS:
+    Description: MySQL Database For Wordpress
+    Value: !Ref RDS
+
+
+# MySQL
+
+# The name of the database to create when the DB instance is created. If this parameter is not specified, no database is created in the DB instance.
+
+# Constraints:
+
+# Must contain 1 to 64 letters or numbers.
+
+# Can't be a word reserved by the specified database engine

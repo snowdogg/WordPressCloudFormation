@@ -1,0 +1,57 @@
+Parameters:
+  PrivateKey:
+    Description: Amazon EC2 Key Pair
+    Type: AWS::EC2::KeyPair::KeyName
+  SubnetId:
+    Description: ID of the subnet where the EC2 will be launched
+    Type: AWS::EC2::Subnet::Id
+  Engineer: 
+    Description: Name Of Engineer Who Launched Configuration
+    Type: String
+    Default: "Unknown"
+  DBName: 
+    Default: wordpress
+    Description: The WordPress database name
+    Type: String
+  DBUsername:
+    Default: admin
+    Description: Wordpress database username
+    Type: String
+  DBRootPassword:
+    Description: wordpress database password
+    Type: String
+      
+
+Resources:
+  EC2Wordpress:
+    Type: AWS::EC2::Instance
+    ImageId: ami-0841edc20334f9287
+    Properties: 
+      InstanceType: t2.micro # could add more selectability later
+      # bash script to install and configure a wordpress server 
+      UserData: 
+        !Base64 !Join [ "," [
+        "#!/bin/bash -v\n",
+        "/opt/aws/bin/cfn-init\n",
+        "# Setup MySQL root password and create a user\n",
+        "mysqladmin -u root password '", !Ref DBRootPassword, "'\n",
+        "cat << EOF | mysql -u root --password='", !Ref DBRootPassword, "'\n",
+        "CREATE DATABASE ", !Ref DBName, ";\n",
+        "GRANT ALL PRIVILEGES ON ", !Ref DBName, ".* TO \"", !Ref DBUsername, "\"@\"localhost\"\n",
+        "IDENTIFIED BY \"", !Ref DBUsername, "\";\n",
+        "FLUSH PRIVILEGES;\n",
+        "EXIT\n",
+        "EOF\n",
+        "sed -i \"/Deny from All/d\" /etc/httpd/conf.d/wordpress.conf\n",
+        "sed -i \"s/Require local/Require all granted/\" /etc/httpd/conf.d/wordpress.conf\n",
+        "sed --in-place --e s/database_name_here/", !Ref DBName, "/ --e s/username_here/", !Ref DBUsername, "/ --e s/password_here/", !Ref DBRootPassword, "/ /usr/share/wordpress/wp-config.php\n",
+        "systemctl restart httpd.service\n",
+        "firewall-cmd --add-service=http\n",
+        "firewall-cmd --permanent --add-service=http\n"
+        ] ]
+      SecurityGroups: # security groups
+      KeyName: !Ref PrivateKey
+      SubnetId: !Ref SubnetId
+      Tags: 
+        - Key: Engineer
+        Value: !Ref Engineer   

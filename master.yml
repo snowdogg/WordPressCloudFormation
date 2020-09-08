@@ -1,0 +1,49 @@
+Parameters:
+  Engineer:
+    Description: Name Of Engineer Who Launched Configuration
+    Type: String
+    Default: "Unknown"
+  DBName:
+    Description: Name of Database
+    Type: String
+    Default: WordpressDB
+  DBUsername: 
+    Description: Master UserName for Database
+    Type: String
+    Default: Admin
+  DBPassword:
+    Description: Master Password for Database
+    Type: String
+
+
+Resources:
+  VPC:
+    Type: AWS:CloudFormation::Stack
+    Properties:
+      TemplateURL: #s3 bucket
+      Parameters:
+        Engineer: !Ref Engineer
+  RDS: 
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: #s3 bucket
+      Parameters:
+        PrivateSubnetID: !GetAtt VPC.Outputs.privateSubnet1
+        Engineer: !Ref Engineer
+  EC2:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: #s3 bucket
+      TimeoutInMinutes: '60'
+      Paramaters:
+        Engineer: !Ref Engineer
+        DBName: !Ref DBName
+        DBUsername: !Ref DBUsername
+        DBRootPassword: !Ref DBPassword
+        SubnetID: !GetAtt VPC.Outputs.publicSubnet1
+  Route53:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: #s3 bucket
+    Parameters: ###
+

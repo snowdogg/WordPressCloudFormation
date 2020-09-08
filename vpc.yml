@@ -1,0 +1,149 @@
+Parameters:
+  Engineer:
+      Description: Name Of Engineer Who Launched Configuration
+      Type: String
+      Default: "Unknown"
+  VPCCidrBlock:
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Default: 10.0.0.0/16
+    Description: VPC CIDR Block (eg 10.0.0.0/16)
+    Type: String
+  PublicSubnetCIDR1:
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Default: 10.0.0.0/24
+    Description: VPC CIDR Block for Public Subnet 1 (eg 10.0.0.0/24)
+    Type: String
+  PublicSubnetCIDR2:
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Default: 10.0.1.0/24
+    Description: VPC CIDR Block for Public Subnet 2 (eg 10.0.1.0/24)
+    Type: String
+  PrivateSubnetCIDR1:
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Default: 10.0.2.0/24
+    Description: VPC CIDR Block for Private Subnet 1 (eg 10.0.2.0/24)
+    Type: String
+  PrivateSubnetCIDR2:
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Default: 10.0.3.0/24
+    Description: VPC CIDR Block for Private Subnet 2 (eg 10.0.3.0/24)
+    Type: String  
+
+Resources:
+
+  wonderfulVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VPCCidrBlock
+      # EnableDnsHostnames: True
+      # EnableDnsSupport: True
+      Tags:
+       - Key: Engineer
+         Value: !Ref Engineer
+
+  publicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref wonderfulVPC
+      CidrBlock: !Ref PublicSubnetCIDR1
+      Tags:
+       - Key: Engineer
+         Value: !Ref Engineer
+
+  publicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:   
+      VpcId: !Ref wonderfulVPC
+      CidrBlock: !Ref PublicSubnetCIDR2
+      Tags:
+       - Key: Engineer
+         Value: !Ref Engineer
+
+  privateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref wonderfulVPC
+      CidrBlock: !Ref PrivateSubnetCIDR1
+      Tags:
+       - Key: Engineer
+         Value: !Ref Engineer
+
+  privateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref wonderfulVPC
+      CidrBlock: !Ref PrivateSubnetCIDR2
+      Tags:
+       - Key: Engineer
+         Value: !Ref Engineer
+
+  wonderfulInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+       - Key: Engineer
+         Value: !Ref Engineer
+
+  AttachInternetGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref wonderfulVPC
+      InternetGatewayId: !Ref wonderfulInternetGateway
+
+  routeTablePublic:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref wonderfulVPC
+      Tags:
+       - Key: Engineer
+         Value: !Ref Engineer
+
+  RouteDefaultPublic:
+    Type: "AWS::EC2::Route"
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref wonderfulInternetGateway
+      RouteTableId: !Ref routeTablePublic
+
+  PublicSubnetRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref publicSubnet1
+      RouteTableId: !Ref routeTablePublic
+
+  PublicSubnetRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref publicSubnet2
+      RouteTableId: !Ref routeTablePublic 
+
+  ElasticIPAddress:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: VPC
+      Tags:
+       - Key: Engineer
+         Value: !Ref Engineer
+
+  wonderfulNatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties: 
+      AllocationId: !GetAtt ElasticIPAddress.AllocationId
+      SubnetId: !Ref publicSubnet1
+      Tags:
+       - Key: Engineer
+         Value: !Ref Engineer
+
+Outputs:
+  publicSubnet1:
+    Description: public subnet 1
+    Value: !Ref publicSubnet1
+  publicSubnet2:
+    Description: public subnet 2
+    Value: !Ref publicSubnet2
+privateSubnet1:
+    Description: private subnet 1
+    Value: !Ref privateSubnet1
+privateSubnet2:
+    Description: private subnet 2
+    Value: !Ref privateSubnet2
