@@ -84,6 +84,6 @@ Resources:
 Outputs:
   PublicIP: #this output lets us use the public ip of wordpress ec2 to use for route53 dns routing
     Description: Wordpress Server Public IP
-    Value: !GetAtt Ec2Wordpress.PublicIp
+    Value: !GetAtt EC2Wordpress.PublicIp
     Export:
       Name: PublicIP
