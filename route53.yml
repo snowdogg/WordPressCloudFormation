@@ -1,21 +1,13 @@
-
 Parameters:
-  HostedZone:
-    Type: AWS::Route53::HostedZone::Id
-  RecordName:
-    Type: String
-    Description: dns name of record 
-​  Ec2IP:
-    Description: IP Address of EC2 Instance
-    Type: String
+    ec2PublicIP:
+        Type: String
 
 Resources:
-  myDNSRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref HostedZone
-      Name: !Ref RecordName
-      ResourceRecords:
-        - !Ref Ec2IP
-      TTL: "900"
-      Type: A
+    DNS:
+        Type: AWS::Route53::RecordSet
+        Properties:
+            HostedZoneId: training.trambo.cloud
+            Name: andreascary.training.trambo.cloud #our new web address
+            ResourceRecords: !Ref ec2PublicIP
+            TTL: '900'      
+            Type: A

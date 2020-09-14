@@ -1,10 +1,7 @@
 Parameters:
-  PrivateKey:
-    Description: Amazon EC2 Key Pair
-    Type: AWS::EC2::KeyPair::KeyName
   SubnetId:
     Description: ID of the subnet where the EC2 will be launched
-    Type: AWS::EC2::Subnet::Id
+    Type: String
   Engineer: 
     Description: Name Of Engineer Who Launched Configuration
     Type: String
@@ -20,38 +17,73 @@ Parameters:
   DBRootPassword:
     Description: wordpress database password
     Type: String
-      
+  DBEndPoint:
+    Description: wordpress database endpoint address 
+    Type: String
+  Engineer:
+    Description: Name Of Engineer Who Launched Configuration
+    Type: String
+    Default: "Unknown"
+
+
 
 Resources:
   EC2Wordpress:
     Type: AWS::EC2::Instance
-    ImageId: ami-0841edc20334f9287
     Properties: 
-      InstanceType: t2.micro # could add more selectability later
+      NetworkInterfaces:  #this block assigns public ip
+        - AssociatePublicIpAddress: "true"
+          DeviceIndex: "0"
+          SubnetId:
+            Ref: SubnetId
+      ImageId: ami-0c94855ba95c71c99 #latest amazon linux ami
+      InstanceType: t2.micro # this instance type keeps us in the free tier
       # bash script to install and configure a wordpress server 
       UserData: 
-        !Base64 !Join [ "," [
-        "#!/bin/bash -v\n",
-        "/opt/aws/bin/cfn-init\n",
-        "# Setup MySQL root password and create a user\n",
-        "mysqladmin -u root password '", !Ref DBRootPassword, "'\n",
-        "cat << EOF | mysql -u root --password='", !Ref DBRootPassword, "'\n",
-        "CREATE DATABASE ", !Ref DBName, ";\n",
-        "GRANT ALL PRIVILEGES ON ", !Ref DBName, ".* TO \"", !Ref DBUsername, "\"@\"localhost\"\n",
-        "IDENTIFIED BY \"", !Ref DBUsername, "\";\n",
-        "FLUSH PRIVILEGES;\n",
-        "EXIT\n",
-        "EOF\n",
-        "sed -i \"/Deny from All/d\" /etc/httpd/conf.d/wordpress.conf\n",
-        "sed -i \"s/Require local/Require all granted/\" /etc/httpd/conf.d/wordpress.conf\n",
-        "sed --in-place --e s/database_name_here/", !Ref DBName, "/ --e s/username_here/", !Ref DBUsername, "/ --e s/password_here/", !Ref DBRootPassword, "/ /usr/share/wordpress/wp-config.php\n",
-        "systemctl restart httpd.service\n",
-        "firewall-cmd --add-service=http\n",
-        "firewall-cmd --permanent --add-service=http\n"
-        ] ]
-      SecurityGroups: # security groups
-      KeyName: !Ref PrivateKey
-      SubnetId: !Ref SubnetId
-      Tags: 
+        Fn::Base64: 
+              !Sub |
+                  #!/bin/bash 
+                  yum update -y
+                  yum install httpd 
+                  yum install -y amazon-linux-extras
+                  amazon-linux-extras enable php7.4 
+                  yum clean metadata -y
+                  yum install php php-{pear,cgi,common,curl,mbstring,gd,mysqlnd,gettext,bcmath,json,xml,fpm,intl,zip,imap} -y
+                  cd /var/www/html
+                  echo "Healthy" > healthy.html
+                  wget https://wordpress.org/latest.tar.gz
+                  tar -xzf latest.tar.gz
+                  cp -r wordpress/* /var/www/html/
+                  rm -r wordpress
+                  rm -rf latest.tar.gz
+                  chmod -R 755 wp-content
+                  chown -R apache:apache wp-content
+                  chkconfig httpd on
+
+                  sed -i 's/database_name_here/${DBName}/g' wp-config-sample.php
+                  sed -i 's/username_here/${DBUsername}/g' wp-config-sample.php
+                  sed -i 's/password_here/${DBRootPassword}/g' wp-config-sample.php
+                  sed -i 's/localhost/${DBEndPoint}/g' wp-config-sample.php
+
+                  curl https://api.wordpress.org/secret-key/1.1/salt/ --output saltKey.txt
+                  sed -i -e '/AUTH_KEY/{r saltKey.txt/1' -e 'd}' wp-config-sample.php
+                  sed -i -e '/LOGGED_IN_KEY/{r saltKey.txt/1' -e 'd}' wp-config-sample.php
+                  sed -i -e '/NONCE_KEY/{r saltKey.txt/1' -e 'd}' wp-config-sample.php
+                  sed -i -e '/AUTH_SALT/{r saltKey.txt/1' -e 'd}' wp-config-sample.php
+                  sed -i -e '/SECURE_AUTH_SALT/{r saltKey.txt/1' -e 'd}' wp-config-sample.php
+                  sed -i -e '/LOGGED_IN_SALT/{r saltKey.txt/1' -e 'd}' wp-config-sample.php
+                  sed -i -e '/NONCE_SALT/{r saltKey.txt' -e 'd}' wp-config-sample.php
+
+                  mv wp-config-sample.php wp-config.php
+                  
+                  service httpd start
+      Tags:
         - Key: Engineer
-        Value: !Ref Engineer   
+          Value: !Ref Engineer
+
+Outputs:
+  PublicIP: #this output lets us use the public ip of wordpress ec2 to use for route53 dns routing
+    Description: Wordpress Server Public IP
+    Value: !GetAtt Ec2Wordpress.PublicIp
+    Export:
+      Name: PublicIP

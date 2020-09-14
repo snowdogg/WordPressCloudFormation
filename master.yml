@@ -17,33 +17,47 @@ Parameters:
 
 
 Resources:
+  #nested stack for VPC, creates two private and two public subnets in us-east-1, uses cidr block 10.0.0.0/16
   VPC:
-    Type: AWS:CloudFormation::Stack
+    Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: #s3 bucket
+      TimeoutInMinutes: '60'  
+      TemplateURL: https://wordpress-stack.s3-us-west-2.amazonaws.com/vpc.yml 
       Parameters:
-        Engineer: !Ref Engineer
+        Engineer: !Ref Engineer #reference to user entered parameter 
   RDS: 
+    #nested stack for RDS mySql Database
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: #s3 bucket
+      TimeoutInMinutes: '60'    
+      TemplateURL: https://wordpress-stack.s3-us-west-2.amazonaws.com/rds.yml #s3 bucket
       Parameters:
-        PrivateSubnetID: !GetAtt VPC.Outputs.privateSubnet1
+        PrivateSubnetID1: !GetAtt VPC.Outputs.privateSubnet1
+        PrivateSubnetID2: !GetAtt VPC.Outputs.privateSubnet2
         Engineer: !Ref Engineer
+        Password: !Ref DBPassword
+
   EC2:
+    #nested stack for EC2 to host the wordpress instance, contains userdata to install/launch wp and connect to mysql db
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: #s3 bucket
+      TemplateURL: https://wordpress-stack.s3-us-west-2.amazonaws.com/ec2wordpress.yml #s3 bucket
       TimeoutInMinutes: '60'
-      Paramaters:
+      Parameters:
         Engineer: !Ref Engineer
         DBName: !Ref DBName
         DBUsername: !Ref DBUsername
         DBRootPassword: !Ref DBPassword
-        SubnetID: !GetAtt VPC.Outputs.publicSubnet1
+        SubnetId: !GetAtt VPC.Outputs.publicSubnet1 #public subnet to launch ec2 in for the world to access via internet gateway
+        DBEndPoint: !GetAtt RDS.Outputs.DBEndpoint #access point for the db to initiate wordpress
+  
   Route53:
+    #nested stack for Route 53, routes a DNS name to the ec2's public ip for web viewing
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: #s3 bucket
-    Parameters: ###
+      TimeoutInMinutes: '60'
+      TemplateURL: https://wordpress-stack.s3-us-west-2.amazonaws.com/route53.yml #s3 bucket
+      Parameters:
+        ec2PublicIP: !GetAtt EC2.Outputs.PublicIP #public ip of ec2 launched in previous stack
 
+ # 

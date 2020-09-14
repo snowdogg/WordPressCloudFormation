@@ -1,5 +1,8 @@
 Parameters:
-  PrivateSubnetID:
+  PrivateSubnetID1:
+    Description: SubnetIDs to populate DB Subnet Group
+    Type: String
+  PrivateSubnetID2:
     Description: SubnetIDs to populate DB Subnet Group
     Type: String
   Engineer: 
@@ -19,22 +22,24 @@ Resources:
     Type: AWS::RDS::DBSubnetGroup
     Properties: 
       DBSubnetGroupDescription: group of subnets to place database in
-      DBSubnetGroupName: String
-      SubnetIds: !Ref PrivateSubnetID
+      DBSubnetGroupName: mysubnetgroup
+      SubnetIds: 
+        - !Ref PrivateSubnetID1
+        - !Ref PrivateSubnetID2
       Tags: 
         - Key: Engineer
           Value: !Ref Engineer
   RDS: 
     Type: AWS::RDS::DBInstance
     Properties: 
-      AllocatedStorage: 2
+      AllocatedStorage: 5
       #AvailabilityZone: #??
       DBInstanceClass: db.t2.micro
       #DBSecurityGroups: #####
-      DBSubnetGroupName: # change to parameter later
+      DBSubnetGroupName: !Ref DBSubnetGroup
       DBName: WordpressDataBase # Change to paramter later
       DBSubnetGroupName: !Ref DBSubnetGroup
-      Engine: mysql
+      Engine: MySQL
       MasterUsername: !Ref Username
       MasterUserPassword: !Ref Password
       Port: 3306
@@ -46,6 +51,13 @@ Outputs:
   RDS:
     Description: MySQL Database For Wordpress
     Value: !Ref RDS
+    Export:
+      Name: RDS
+  DBEndpoint:
+    Description: connection endpoint for the database.
+    Value: !GetAtt  RDS.Endpoint.Address
+    Export:
+      Name: "DBEndpoint"
 
 
 # MySQL

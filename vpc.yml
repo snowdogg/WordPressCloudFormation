@@ -30,7 +30,6 @@ Parameters:
     Type: String  
 
 Resources:
-
   wonderfulVPC:
     Type: AWS::EC2::VPC
     Properties:
@@ -62,6 +61,7 @@ Resources:
   privateSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
+      AvailabilityZone: us-east-1a
       VpcId: !Ref wonderfulVPC
       CidrBlock: !Ref PrivateSubnetCIDR1
       Tags:
@@ -71,6 +71,7 @@ Resources:
   privateSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
+      AvailabilityZone: us-east-1b
       VpcId: !Ref wonderfulVPC
       CidrBlock: !Ref PrivateSubnetCIDR2
       Tags:
@@ -78,7 +79,7 @@ Resources:
          Value: !Ref Engineer
 
   wonderfulInternetGateway:
-    Type: AWS::EC2::InternetGateway
+    Type: AWS::EC2::InternetGateway #connects our public subnets to the internet
     Properties:
       Tags:
        - Key: Engineer
@@ -125,7 +126,7 @@ Resources:
        - Key: Engineer
          Value: !Ref Engineer
 
-  wonderfulNatGateway:
+  wonderfulNatGateway: 
     Type: AWS::EC2::NatGateway
     Properties: 
       AllocationId: !GetAtt ElasticIPAddress.AllocationId
@@ -134,16 +135,24 @@ Resources:
        - Key: Engineer
          Value: !Ref Engineer
 
-Outputs:
+Outputs: #gives us access to our subnet ids to have available for other stacks to assign resources to a subnet
   publicSubnet1:
     Description: public subnet 1
     Value: !Ref publicSubnet1
+    Export: 
+      Name: publicSubnet1
   publicSubnet2:
     Description: public subnet 2
     Value: !Ref publicSubnet2
-privateSubnet1:
+    Export: 
+      Name: publicSubnet2    
+  privateSubnet1:
     Description: private subnet 1
     Value: !Ref privateSubnet1
-privateSubnet2:
+    Export: 
+      Name: privateSubnet1
+  privateSubnet2:
     Description: private subnet 2
     Value: !Ref privateSubnet2
+    Export: 
+      Name: privateSubnet2
