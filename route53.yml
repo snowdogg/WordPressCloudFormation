@@ -4,10 +4,10 @@ Parameters:
 
 Resources:
     DNS:
-        Type: AWS::Route53::RecordSet
+        Type: AWS::Route53::RecordSet3
         Properties:
-            HostedZoneId: training.trambo.cloud
-            Name: andreascary.training.trambo.cloud #our new web address
-            ResourceRecords: !Ref ec2PublicIP
+            HostedZoneId: Z2LZ45JUYPDLLV
+            Name: andreascary
+            ResourceRecords: [!Ref ec2PublicIP]
             TTL: '900'      
             Type: A
