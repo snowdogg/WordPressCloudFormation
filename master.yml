@@ -51,13 +51,13 @@ Resources:
         SubnetId: !GetAtt VPC.Outputs.publicSubnet1 #public subnet to launch ec2 in for the world to access via internet gateway
         DBEndPoint: !GetAtt RDS.Outputs.DBEndpoint #access point for the db to initiate wordpress
   
- #  Route53:
- #    #nested stack for Route 53, routes a DNS name to the ec2's public ip for web viewing
- #    Type: AWS::CloudFormation::Stack
- #    Properties:
- #      TimeoutInMinutes: '60'
- #      TemplateURL: https://wordpress-stack.s3-us-west-2.amazonaws.com/route53.yml #s3 bucket
- #      Parameters:
- #        ec2PublicIP: !GetAtt EC2.Outputs.PublicIP #public ip of ec2 launched in previous stack
+  Route53:
+    #nested stack for Route 53, routes a DNS name to the ec2's public ip for web viewing
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TimeoutInMinutes: '60'
+      TemplateURL: https://wordpress-stack.s3-us-west-2.amazonaws.com/route53.yml #s3 bucket
+      Parameters:
+        ec2PublicIP: !GetAtt EC2.Outputs.PublicIP #public ip of ec2 launched in previous stack
 
  # # 
