@@ -4,7 +4,7 @@ Parameters:
 
 Resources:
     DNS:
-        Type: AWS::Route53::RecordSet3
+        Type: AWS::Route53::RecordSet
         Properties:
             HostedZoneId: Z2LZ45JUYPDLLV
             Name: andreascary
