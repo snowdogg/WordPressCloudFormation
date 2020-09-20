@@ -90,6 +90,8 @@ Resources:
       MasterUsername: !Ref Username
       MasterUserPassword: !Ref Password
       Port: 3306
+      VPCSecurityGroups:
+        - !GetAtt DBSecurityGroup.GroupId
       Tags: 
         - Key: Engineer
           Value: !Ref Engineer           

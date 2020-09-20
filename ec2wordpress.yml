@@ -55,14 +55,18 @@ Parameters:
     Default: 10.0.0.0/16
     Description: VPC CIDR Block (eg 10.0.0.0/16)
     Type: String
-    
+  WordPressUserName:
+    Type: String
+  WordPressUserPassword:
+    Type: String
+
 Resources:
 
   EC2SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: WordpressEC2SecurityGroup
-      GroupDescription: blablabla
+      GroupDescription: Allows incoming traffic on port 80 and 443, allows mysql 3306 incoming traffic from VPCs private subnets
       VpcId: !Ref VPC
       SecurityGroupIngress:
         - CidrIp: !Ref PrivateSubnetCIDR1
@@ -88,6 +92,8 @@ Resources:
       NetworkInterfaces:  #this block assigns public ip
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
+          GroupSet:
+            - Ref: EC2SecurityGroup
           SubnetId:
             Ref: SubnetId
       ImageId: ami-0c94855ba95c71c99 #latest amazon linux ami
@@ -98,39 +104,31 @@ Resources:
               !Sub |
                   #!/bin/bash 
                   yum update -y
-                  yum install httpd 
-                  yum install -y amazon-linux-extras
-                  amazon-linux-extras enable php7.4 
-                  yum clean metadata -y
-                  yum install php php-{pear,cgi,common,curl,mbstring,gd,mysqlnd,gettext,bcmath,json,xml,fpm,intl,zip,imap} -y
-                  cd /var/www/html
-                  echo "Healthy" > healthy.html
-                  wget https://wordpress.org/latest.tar.gz
-                  tar -xzf latest.tar.gz
-                  cp -r wordpress/* /var/www/html/
-                  rm -r wordpress
-                  rm -rf latest.tar.gz
-                  chmod -R 755 wp-content
-                  chown -R apache:apache wp-content
-                  chkconfig httpd on
-
-                  sed -i 's/database_name_here/${DBName}/g' wp-config-sample.php
-                  sed -i 's/username_here/${DBUsername}/g' wp-config-sample.php
-                  sed -i 's/password_here/${DBRootPassword}/g' wp-config-sample.php
-                  sed -i 's/localhost/${DBEndPoint}/g' wp-config-sample.php
-
-                  curl https://api.wordpress.org/secret-key/1.1/salt/ --output saltKey.txt
-                  sed -i -e '/AUTH_KEY/{r saltKey.txt/1' -e 'd}' wp-config-sample.php
-                  sed -i -e '/LOGGED_IN_KEY/{r saltKey.txt/1' -e 'd}' wp-config-sample.php
-                  sed -i -e '/NONCE_KEY/{r saltKey.txt/1' -e 'd}' wp-config-sample.php
-                  sed -i -e '/AUTH_SALT/{r saltKey.txt/1' -e 'd}' wp-config-sample.php
-                  sed -i -e '/SECURE_AUTH_SALT/{r saltKey.txt/1' -e 'd}' wp-config-sample.php
-                  sed -i -e '/LOGGED_IN_SALT/{r saltKey.txt/1' -e 'd}' wp-config-sample.php
-                  sed -i -e '/NONCE_SALT/{r saltKey.txt' -e 'd}' wp-config-sample.php
-
-                  mv wp-config-sample.php wp-config.php
+                  yum install -y mysql httpd
+                  wget -P /home/test https://wordpress.org/latest.tar.gz
+                  tar -xzf /home/test/latest.tar.gz --directory /home/test/
                   
+                  export MYSQL_HOST=${DBEndPoint}
+                  mysql --user=${DBUsername} --password=${DBRootPassword} ${DBName}
+                  CREATE USER '${WordPressUserName}' IDENTIFIED BY '${WordPressUserPassword}';
+                  GRANT ALL PRIVILEGES ON ${DBName}.* TO ${WordPressUserName};
+                  FLUSH PRIVILEGES;
+                  Exit
+
                   service httpd start
+                  mv /home/test/wordpress/wp-config-sample.php /home/test/wordpress/wp-config.php 
+
+                  sed -i 's/database_name_here/${DBName}/g' /home/test/wordpress/wp-config.php 
+                  sed -i 's/username_here/${DBUsername}/g' /home/test/wordpress/wp-config.php 
+                  sed -i 's/password_here/${DBRootPassword}/g' /home/test/wordpress/wp-config.php 
+                  sed -i 's/localhost/${DBEndPoint}/g' /home/test/wordpress/wp-config.php 
+
+                  curl https://api.wordpress.org/secret-key/1.1/salt/ --output /home/test/wordpress/saltKey.txt
+                  sed -i -e '/NONCE_SALT/{r /home/test/wordpress/saltKey.txt' -e 'd}' /home/test/wordpress/wp-config.php
+                  sed -i '/put your unique phrase here/d' /home/test/wordpress/wp-config.php
+                  amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
+                  cp -r /home/test/wordpress/* /var/www/html/
+                  service httpd restart
       Tags:
         - Key: Engineer
           Value: !Ref Engineer

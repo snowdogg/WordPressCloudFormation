@@ -1,4 +1,8 @@
 Parameters:
+  WordPressUser:
+    Type: String
+  WordpressUserPassword:
+    Type: String
   Engineer:
     Description: Name Of Engineer Who Launched Configuration
     Type: String
@@ -95,6 +99,8 @@ Resources:
         PrivateSubnetCIDR1: !Ref PrivateSubnetCIDR1
         PrivateSubnetCIDR2: !Ref PrivateSubnetCIDR2
         VPCCidrBlock: !Ref VPCCidrBlock
+        WordPressUserName: !Ref WordPressUser
+        WordPressUserPassword: !Ref WordpressUserPassword
         
   # Route53:
   #   #nested stack for Route 53, routes a DNS name to the ec2's public ip for web viewing
