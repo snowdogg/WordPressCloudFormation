@@ -7,7 +7,7 @@ Resources:
         Type: AWS::Route53::RecordSet
         Properties:
             HostedZoneId: Z2LZ45JUYPDLLV
-            Name: andreascary
+            Name: andreascary.training.trambo.cloud
             ResourceRecords: [!Ref ec2PublicIP]
             TTL: '900'      
             Type: A

@@ -14,6 +14,31 @@ Parameters:
   DBPassword:
     Description: Master Password for Database
     Type: String
+  VPCCidrBlock:
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Default: 10.0.0.0/16
+    Description: VPC CIDR Block (eg 10.0.0.0/16)
+    Type: String
+  PublicSubnetCIDR1:
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Default: 10.0.0.0/24
+    Description: VPC CIDR Block for Public Subnet 1 (eg 10.0.0.0/24)
+    Type: String
+  PublicSubnetCIDR2:
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Default: 10.0.1.0/24
+    Description: VPC CIDR Block for Public Subnet 2 (eg 10.0.1.0/24)
+    Type: String
+  PrivateSubnetCIDR1:
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Default: 10.0.2.0/24
+    Description: VPC CIDR Block for Private Subnet 1 (eg 10.0.2.0/24)
+    Type: String
+  PrivateSubnetCIDR2:
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Default: 10.0.3.0/24
+    Description: VPC CIDR Block for Private Subnet 2 (eg 10.0.3.0/24)
+    Type: String
 
 
 Resources:
@@ -25,6 +50,11 @@ Resources:
       TemplateURL: https://wordpress-stack.s3-us-west-2.amazonaws.com/vpc.yml 
       Parameters:
         Engineer: !Ref Engineer #reference to user entered parameter 
+        VPCCidrBlock: !Ref VPCCidrBlock
+        PublicSubnetCIDR1: !Ref PublicSubnetCIDR1
+        PublicSubnetCIDR2: !Ref PublicSubnetCIDR2
+        PrivateSubnetCIDR1: !Ref PrivateSubnetCIDR1
+        PrivateSubnetCIDR2: !Ref PrivateSubnetCIDR2
   RDS: 
     #nested stack for RDS mySql Database
     Type: AWS::CloudFormation::Stack
@@ -34,9 +64,16 @@ Resources:
       Parameters:
         PrivateSubnetID1: !GetAtt VPC.Outputs.privateSubnet1
         PrivateSubnetID2: !GetAtt VPC.Outputs.privateSubnet2
+        PublicSubnetID1: !GetAtt VPC.Outputs.publicSubnet1
+        PublicSubnetID2: !GetAtt VPC.Outputs.publicSubnet2
         Engineer: !Ref Engineer
         Password: !Ref DBPassword
-
+        VPC: !GetAtt VPC.Outputs.VPC
+        PublicSubnetCIDR1: !Ref PublicSubnetCIDR1
+        PublicSubnetCIDR2: !Ref PublicSubnetCIDR2
+        PrivateSubnetCIDR1: !Ref PrivateSubnetCIDR1
+        PrivateSubnetCIDR2: !Ref PrivateSubnetCIDR2
+        VPCCidrBlock: !Ref VPCCidrBlock
   EC2:
     #nested stack for EC2 to host the wordpress instance, contains userdata to install/launch wp and connect to mysql db
     Type: AWS::CloudFormation::Stack
@@ -50,14 +87,24 @@ Resources:
         DBRootPassword: !Ref DBPassword
         SubnetId: !GetAtt VPC.Outputs.publicSubnet1 #public subnet to launch ec2 in for the world to access via internet gateway
         DBEndPoint: !GetAtt RDS.Outputs.DBEndpoint #access point for the db to initiate wordpress
+        VPC: !GetAtt VPC.Outputs.VPC
+        PrivateSubnetID1: !GetAtt VPC.Outputs.privateSubnet1
+        PrivateSubnetID2: !GetAtt VPC.Outputs.privateSubnet2
+        PublicSubnetCIDR1: !Ref PublicSubnetCIDR1
+        PublicSubnetCIDR2: !Ref PublicSubnetCIDR2
+        PrivateSubnetCIDR1: !Ref PrivateSubnetCIDR1
+        PrivateSubnetCIDR2: !Ref PrivateSubnetCIDR2
+        VPCCidrBlock: !Ref VPCCidrBlock
+        
+  # Route53:
+  #   #nested stack for Route 53, routes a DNS name to the ec2's public ip for web viewing
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TimeoutInMinutes: '60'
+  #     TemplateURL: https://wordpress-stack.s3-us-west-2.amazonaws.com/route53.yml #s3 bucket
+  #     Parameters:
+  #       ec2PublicIP: !GetAtt EC2.Outputs.PublicIP #public ip of ec2 launched in previous stack
+
   
-  Route53:
-    #nested stack for Route 53, routes a DNS name to the ec2's public ip for web viewing
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TimeoutInMinutes: '60'
-      TemplateURL: https://wordpress-stack.s3-us-west-2.amazonaws.com/route53.yml #s3 bucket
-      Parameters:
-        ec2PublicIP: !GetAtt EC2.Outputs.PublicIP #public ip of ec2 launched in previous stack
 
  # # 

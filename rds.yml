@@ -5,6 +5,12 @@ Parameters:
   PrivateSubnetID2:
     Description: SubnetIDs to populate DB Subnet Group
     Type: String
+  PublicSubnetID1:
+    Description: Accept traffic to the DB from this cidr block
+    Type: String
+  PublicSubnetID2:
+    Description: Accept traffic to the DB from this cidr block
+    Type: String
   Engineer: 
     Description: Name Of Engineer Who Launched Configuration
     Type: String
@@ -16,8 +22,49 @@ Parameters:
   Password:
     Description: Master Password for Database
     Type: String
+  VPC:
+    Description: vpc for the environment
+    Type: String
+  VPCCidrBlock:
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Default: 10.0.0.0/16
+    Description: VPC CIDR Block (eg 10.0.0.0/16)
+    Type: String
+  PublicSubnetCIDR1:
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Default: 10.0.0.0/24
+    Description: VPC CIDR Block for Public Subnet 1 (eg 10.0.0.0/24)
+    Type: String
+  PublicSubnetCIDR2:
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Default: 10.0.1.0/24
+    Description: VPC CIDR Block for Public Subnet 2 (eg 10.0.1.0/24)
+    Type: String
+  PrivateSubnetCIDR1:
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Default: 10.0.2.0/24
+    Description: VPC CIDR Block for Private Subnet 1 (eg 10.0.2.0/24)
+    Type: String
+  PrivateSubnetCIDR2:
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Default: 10.0.3.0/24
+    Description: VPC CIDR Block for Private Subnet 2 (eg 10.0.3.0/24)
+    Type: String
 
-Resources: 
+
+Resources:
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: WordpressRDSSecurityGroup
+      GroupDescription: allows incoming mysql connection
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - CidrIp: !Ref PublicSubnetCIDR1
+          IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+
   DBSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties: 

@@ -1,8 +1,8 @@
 Parameters:
   Engineer:
-      Description: Name Of Engineer Who Launched Configuration
-      Type: String
-      Default: "Unknown"
+    Description: Name Of Engineer Who Launched Configuration
+    Type: String
+    Default: "Unknown"
   VPCCidrBlock:
     AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
     Default: 10.0.0.0/16
@@ -136,6 +136,11 @@ Resources:
          Value: !Ref Engineer
 
 Outputs: #gives us access to our subnet ids to have available for other stacks to assign resources to a subnet
+  VPC:
+    Description: vpc
+    Value: !Ref wonderfulVPC
+    Export:
+      Name: VPC
   publicSubnet1:
     Description: public subnet 1
     Value: !Ref publicSubnet1
