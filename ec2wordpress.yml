@@ -55,10 +55,6 @@ Parameters:
     Default: 10.0.0.0/16
     Description: VPC CIDR Block (eg 10.0.0.0/16)
     Type: String
-  WordPressUserName:
-    Type: String
-  WordPressUserPassword:
-    Type: String
 
 Resources:
 
@@ -102,33 +98,25 @@ Resources:
       UserData: 
         Fn::Base64: 
               !Sub |
-                  #!/bin/bash 
-                  yum update -y
-                  yum install -y mysql httpd
-                  wget -P /home/test https://wordpress.org/latest.tar.gz
-                  tar -xzf /home/test/latest.tar.gz --directory /home/test/
-                  
-                  export MYSQL_HOST=${DBEndPoint}
-                  mysql --user=${DBUsername} --password=${DBRootPassword} ${DBName}
-                  CREATE USER '${WordPressUserName}' IDENTIFIED BY '${WordPressUserPassword}';
-                  GRANT ALL PRIVILEGES ON ${DBName}.* TO ${WordPressUserName};
-                  FLUSH PRIVILEGES;
-                  Exit
-
-                  service httpd start
-                  mv /home/test/wordpress/wp-config-sample.php /home/test/wordpress/wp-config.php 
-
-                  sed -i 's/database_name_here/${DBName}/g' /home/test/wordpress/wp-config.php 
-                  sed -i 's/username_here/${DBUsername}/g' /home/test/wordpress/wp-config.php 
-                  sed -i 's/password_here/${DBRootPassword}/g' /home/test/wordpress/wp-config.php 
-                  sed -i 's/localhost/${DBEndPoint}/g' /home/test/wordpress/wp-config.php 
-
-                  curl https://api.wordpress.org/secret-key/1.1/salt/ --output /home/test/wordpress/saltKey.txt
-                  sed -i -e '/NONCE_SALT/{r /home/test/wordpress/saltKey.txt' -e 'd}' /home/test/wordpress/wp-config.php
-                  sed -i '/put your unique phrase here/d' /home/test/wordpress/wp-config.php
-                  amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
-                  cp -r /home/test/wordpress/* /var/www/html/
-                  service httpd restart
+                #!/bin/bash
+                yum install -y httpd
+                service httpd start
+                wget https://wordpress.org/latest.tar.gz
+                tar -xzf latest.tar.gz
+                cp -r wordpress/* /var/www/html/
+                rm -r wordpress
+                rm -rf latest.tar.gz
+                cd /var/www/html
+                cp wp-config-sample.php wp-config.php
+                sed -i 's/database_name_here/${DBName}/g' wp-config.php 
+                sed -i 's/username_here/${DBUsername}/g' wp-config.php
+                sed -i 's/password_here/${DBRootPassword}/g' wp-config.php 
+                sed -i 's/localhost/${DBEndPoint}/g' wp-config.php 
+                curl https://api.wordpress.org/secret-key/1.1/salt/ --output saltKey.txt
+                sed -i -e '/NONCE_SALT/{r saltKey.txt' -e 'd}' wp-config.php
+                sed -i '/put your unique phrase here/d' wp-config.php
+                amazon-linux-extras install -y lamp-mariadb10.2-php7.2 php7.2
+                service httpd restart
       Tags:
         - Key: Engineer
           Value: !Ref Engineer

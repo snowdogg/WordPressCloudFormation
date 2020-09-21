@@ -50,6 +50,8 @@ Parameters:
     Default: 10.0.3.0/24
     Description: VPC CIDR Block for Private Subnet 2 (eg 10.0.3.0/24)
     Type: String
+  DBName: 
+    Type: String
 
 
 Resources:
@@ -79,12 +81,11 @@ Resources:
   RDS: 
     Type: AWS::RDS::DBInstance
     Properties: 
+      DBName: !Ref DBName
       AllocatedStorage: 5
-      #AvailabilityZone: #??
       DBInstanceClass: db.t2.micro
-      #DBSecurityGroups: #####
       DBSubnetGroupName: !Ref DBSubnetGroup
-      DBName: WordpressDataBase # Change to paramter later
+      DBName: !Ref DBName 
       DBSubnetGroupName: !Ref DBSubnetGroup
       Engine: MySQL
       MasterUsername: !Ref Username
