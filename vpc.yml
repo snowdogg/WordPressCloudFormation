@@ -34,8 +34,6 @@ Resources:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: !Ref VPCCidrBlock
-      # EnableDnsHostnames: True
-      # EnableDnsSupport: True
       Tags:
        - Key: Engineer
          Value: !Ref Engineer
@@ -43,7 +41,7 @@ Resources:
   publicSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
-      VpcId: !Ref wonderfulVPC
+      VpcId: !Ref wonderfulVPC 
       CidrBlock: !Ref PublicSubnetCIDR1
       Tags:
        - Key: Engineer
@@ -52,7 +50,7 @@ Resources:
   publicSubnet2:
     Type: AWS::EC2::Subnet
     Properties:   
-      VpcId: !Ref wonderfulVPC
+      VpcId: !Ref wonderfulVPC 
       CidrBlock: !Ref PublicSubnetCIDR2
       Tags:
        - Key: Engineer
@@ -61,7 +59,7 @@ Resources:
   privateSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: us-east-1a
+      AvailabilityZone: us-east-1a #swap this out if you need to for your local region or parameterize
       VpcId: !Ref wonderfulVPC
       CidrBlock: !Ref PrivateSubnetCIDR1
       Tags:
@@ -71,7 +69,7 @@ Resources:
   privateSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: us-east-1b
+      AvailabilityZone: us-east-1b #swap this out if you need to for your local region or parameterize
       VpcId: !Ref wonderfulVPC
       CidrBlock: !Ref PrivateSubnetCIDR2
       Tags:
@@ -134,6 +132,34 @@ Resources:
       Tags:
        - Key: Engineer
          Value: !Ref Engineer
+
+  routeTablePrivate:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref wonderfulVPC
+      Tags:
+        - Key: Engineer
+          Value: !Ref Engineer
+
+  RouteDefaultPrivate:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref routeTablePrivate
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref wonderfulNatGateway
+
+  PrivateSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref privateSubnet1
+      RouteTableId: !Ref routeTablePrivate
+
+  PrivateSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref privateSubnet2
+      RouteTableId: !Ref routeTablePrivate
+
 
 Outputs: #gives us access to our subnet ids to have available for other stacks to assign resources to a subnet
   VPC:

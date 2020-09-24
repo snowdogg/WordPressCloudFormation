@@ -47,7 +47,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TimeoutInMinutes: '60'  
-      TemplateURL: https://wordpress-stack.s3-us-west-2.amazonaws.com/vpc.yml 
+      TemplateURL: https://wordpress-stack.s3-us-west-2.amazonaws.com/vpc.yml #replace with your own s3 hosted stack
       Parameters:
         Engineer: !Ref Engineer #reference to user entered parameter 
         VPCCidrBlock: !Ref VPCCidrBlock
@@ -60,7 +60,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TimeoutInMinutes: '60'    
-      TemplateURL: https://wordpress-stack.s3-us-west-2.amazonaws.com/rds.yml #s3 bucket
+      TemplateURL: https://wordpress-stack.s3-us-west-2.amazonaws.com/rds.yml #replace with your own s3 hosted stack
       Parameters:
         PrivateSubnetID1: !GetAtt VPC.Outputs.privateSubnet1
         PrivateSubnetID2: !GetAtt VPC.Outputs.privateSubnet2
@@ -80,7 +80,7 @@ Resources:
     #nested stack for EC2 to host the wordpress instance, contains userdata to install/launch wp and connect to mysql db
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: https://wordpress-stack.s3-us-west-2.amazonaws.com/ec2wordpress.yml #s3 bucket
+      TemplateURL: https://wordpress-stack.s3-us-west-2.amazonaws.com/ec2wordpress.yml #replace with your own s3 hosted stack
       TimeoutInMinutes: '60'
       Parameters:
         Engineer: !Ref Engineer
@@ -102,7 +102,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TimeoutInMinutes: '60'
-      TemplateURL: https://wordpress-stack.s3-us-west-2.amazonaws.com/route53.yml #s3 bucket
+      TemplateURL: https://wordpress-stack.s3-us-west-2.amazonaws.com/route53.yml #replace with your own s3 hosted stack
       Parameters:
         ec2PublicIP: !GetAtt EC2.Outputs.PublicIP #public ip of ec2 launched in previous stack
 

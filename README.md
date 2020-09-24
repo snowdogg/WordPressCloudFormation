@@ -1,25 +1,16 @@
-# WordPressCloudFormation
+
 CloudFormation Template to launch a functional Wordpress server
 
+Created By Andreas Cary
 
-Instructor Prompt:
-I need you to crea
-te the following:
-- Cloudformation template to create the VPC (use the one that you did)
+master contains a series of parameters and nested stacks
 
-- Cloudformation template to create the RDS instance (mysql)
+VPC creates two public subnets connected to the outside world with an internet gateway, a nat gateway which lives in public subnet 1, and two private subnets, with appropriate routing tables
 
-- Cloudformation template to create an EC2 and install and configure a wordpress server using the userdata
+RDS creates a mysql database in private subnet 1
 
-- Cloudformation template to create a route53 record for your wordpress public ip. (use the training.trambo.cloud hosted zone)
+EC2wordpress creates an EC2 instance in public subnet 1 which connects to the RDS instance created in the previous stack.
 
-- A 'Main' cloudformation template from where you are calling the nested stacks
+Route53 ties the instance to a domain name so it can easily be accessed in the browser.
 
-Notes:
-You must configure the wordpress db connection from the cloudformation itself. dont do it manually
-
-The idea is to launch the cloudformation stacks, then hit the DNS and start using wordpress
-
-Deliverable
-Push your cloudformation code in a personal github repository. Document everything on a README.md file and send the repo to me.
-Document everything assuming that the person that is reading it doesnt have experience with cloudformation and either with AWS
+Please remember to change the "TemplateURL" property of the nested stacks if you are editing and using your own nested stacks. Also would be a good idea to use a route 53 zone that you have permissions to use as that is also currently hard coded and would need to be changed if you want to use this stack :)

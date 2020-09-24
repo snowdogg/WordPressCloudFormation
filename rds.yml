@@ -86,7 +86,6 @@ Resources:
       DBInstanceClass: db.t2.micro
       DBSubnetGroupName: !Ref DBSubnetGroup
       DBName: !Ref DBName 
-      DBSubnetGroupName: !Ref DBSubnetGroup
       Engine: MySQL
       MasterUsername: !Ref Username
       MasterUserPassword: !Ref Password
@@ -107,7 +106,7 @@ Outputs:
     Description: connection endpoint for the database.
     Value: !GetAtt  RDS.Endpoint.Address
     Export:
-      Name: "DBEndpoint"
+      Name: DBEndpoint
 
 
 # MySQL
