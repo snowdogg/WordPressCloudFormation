@@ -1,5 +1,5 @@
 
-CloudFormation Template to launch a functional Wordpress server
+CloudFormation Template to launch a Wordpress server
 
 Created By Andreas Cary
 
