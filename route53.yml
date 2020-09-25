@@ -6,8 +6,8 @@ Resources:
     DNS:
         Type: AWS::Route53::RecordSet
         Properties:
-            HostedZoneId: Z2LZ45JUYPDLLV
-            Name: andreascary.training.trambo.cloud
+            HostedZoneId: Z2LZ45JUYPDLLV #change to match your zone
+            Name: andreascary.training.trambo.cloud #change to match your zone's domain name 
             ResourceRecords: [!Ref ec2PublicIP]
             TTL: '900'      
             Type: A
