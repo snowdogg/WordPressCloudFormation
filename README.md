@@ -3,7 +3,9 @@ CloudFormation Template to launch a functional Wordpress server
 
 Created By Andreas Cary
 
-master contains a series of parameters and nested stacks
+![wireframe of resources created](/wireframe.png "wireframe of resources created")
+
+master.yml contains a series of parameters and nested stacks.
 
 VPC creates two public subnets connected to the outside world with an internet gateway, a nat gateway which lives in public subnet 1, and two private subnets, with appropriate routing tables
 
