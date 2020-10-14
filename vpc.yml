@@ -59,7 +59,7 @@ Resources:
   privateSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: us-east-1a #swap this out if you need to for your local region or parameterize
+      AvailabilityZone: !Select [ 0, !GetAZs  '' ]
       VpcId: !Ref wonderfulVPC
       CidrBlock: !Ref PrivateSubnetCIDR1
       Tags:
@@ -69,7 +69,7 @@ Resources:
   privateSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: us-east-1b #swap this out if you need to for your local region or parameterize
+      AvailabilityZone: !Select [ 0, !GetAZs  '' ]
       VpcId: !Ref wonderfulVPC
       CidrBlock: !Ref PrivateSubnetCIDR2
       Tags:
