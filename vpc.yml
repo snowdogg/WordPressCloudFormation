@@ -59,7 +59,7 @@ Resources:
   privateSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: !Select [ 0, !GetAZs  '' ]
+      AvailabilityZone: us-east-1a
       VpcId: !Ref wonderfulVPC
       CidrBlock: !Ref PrivateSubnetCIDR1
       Tags:
@@ -69,7 +69,7 @@ Resources:
   privateSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: !Select [ 0, !GetAZs  '' ]
+      AvailabilityZone: us-east-1b
       VpcId: !Ref wonderfulVPC
       CidrBlock: !Ref PrivateSubnetCIDR2
       Tags:

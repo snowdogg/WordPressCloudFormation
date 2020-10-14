@@ -1,18 +1,27 @@
+# WordPress Stack w/ CloudFormation
 
-CloudFormation Template to launch a functional Wordpress server
-
-Created By Andreas Cary
+Cloudformation template using nested stacks to launch an empty (new) WordPress site and host it on Route 53. Resources created include a VPC, MySQL RDS Database Instance, EC2 Instance, and a Route 53 Domain.
 
 ![wireframe of resources created](/wireframe.png "wireframe of resources created")
 
-master.yml contains a series of parameters and nested stacks.
+## Prerequisites
 
-VPC creates two public subnets connected to the outside world with an internet gateway, a nat gateway which lives in public subnet 1, and two private subnets, with appropriate routing tables
+You must have an AWS Account to use CloudFormation. You must also upload the yml files contained in this repository to an S3 bucket and make the contents accessible to the public. You must also create a hosted zone.
 
-RDS creates a mysql database in private subnet 1
+## Important Changes
 
-EC2wordpress creates an EC2 instance in public subnet 1 which connects to the RDS instance created in the previous stack.
+After uploading the yml files to an S3 bucket, please make sure to change the TemplateURL parameter on all of the nested stacks to reflect your S3 bucket's unique path.
 
-Route53 ties the instance to a domain name so it can easily be accessed in the browser.
+#### Master.yml
+```yaml
+TemplateURL: your s3 url goes here
+```
 
-Please remember to change the "TemplateURL" property of the nested stacks if you are editing and using your own nested stacks. Also would be a good idea to use a route 53 zone that you have permissions to use as that is also currently hard coded and would need to be changed if you want to use this stack :)
+#### route53.yml
+```yaml
+HostedZoneId: yourhostedzoneidgoeshere
+Name: your.hosted.zone.here
+```
+
+## License
+[MIT](https://choosealicense.com/licenses/mit/)
